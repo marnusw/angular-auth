@@ -7,38 +7,49 @@
 
 angular.module('mw.oauth')
 
-.factory('OAuthEndpointLogin', function(OAuthOptions, OAuthRequestHost) {
+/**
+ * @ngdoc service
+ * @name OAuthEndpointLogin
+ * @kind function
+ *
+ * @description
+ */
+.factory('OAuthEndpointLogin', ['OAuth', 'OAuthRequestHost', '$http', '$q',
+  function(OAuth, OAuthRequestHost, $http, $q) {
 
-    var service = {},
-        options = OAuthOptions.options;
+    var options = OAuth.options,
+        service = {};
     
     /**
      * @ngdoc method
      * @name OAuthEndpointLogin#login
      * 
-     * @param {string} username 
-     * @param {string} password 
+     * @param {Object} credentials An object containing a username and password.
      * 
      * @return {$q.promise} A deferred of the request which resolves to an error message when applicable.
      * 
      * @description
      * Log in to the authorisation URL with provided credentials.
      */
-    service.login = function(username, password) {
-        var request = $http.post(options.authPath, {
-            grant_type : 'password',
-            username   : username,
-            password   : password,
-            client_id  : options.clientId
-        });
+    service.login = function(credentials) {
+        var requestData = angular.extend(credentials, {
+                grant_type : 'password',
+                client_id  : options.clientId,
+                scope      : options.scope
+            }),
+            request = $http.post(options.authPath, requestData),
+            result = $q.defer();
         
         request.then(function(successResponse) {
-            AccessToken.set(OAuthRequestHost.getHost(options.authPath), successResponse.data);
+            result.resolve({
+                host        : OAuthRequestHost.getHost(options.authPath),
+                tokenParams : successResponse.data
+            });
         }, function(errorResponse) {
-            return (errorResponse.data && errorResponse.data.detail) || 'Invalid credentials';
+            result.reject((errorResponse.data && errorResponse.data.detail) || 'Invalid credentials');
         });
         
-        return request;
+        return result.promise;
     };
 
     /**
@@ -54,15 +65,19 @@ angular.module('mw.oauth')
      */
     service.refresh = function(refreshToken) {
         var request = $http.post(options.authPath, {
-            grant_type    : 'refresh_token',
-            refresh_token : refreshToken,
-            client_id     : options.clientId
-        });
+                grant_type    : 'refresh_token',
+                refresh_token : refreshToken,
+                client_id     : options.clientId,
+                scope         : options.scope
+            });
         
         request.then(function(successResponse) {
-            AccessToken.set(OAuthRequestHost.getHost(options.authPath), successResponse.data);
+            result.resolve({
+                host:        OAuthRequestHost.getHost(options.authPath),
+                tokenParams: successResponse.data
+            });
         }, function(errorResponse) {
-            return (errorResponse.data && errorResponse.data.detail) || 'Invalid credentials';
+            result.reject((errorResponse.data && errorResponse.data.detail) || 'Refresh failed');
         });
         
         return request;
@@ -77,7 +92,8 @@ angular.module('mw.oauth')
      */
     service.logout = function() {
         options.logoutPath && $http.post(options.logoutPath);
+        return OAuthRequestHost.getHost(options.logoutPath || options.authPath);
     };
 
     return service;
-});
+}]);
