@@ -13,13 +13,9 @@ angular.module('mw.oauth')
         restrict: 'AE',
         replace: true,
         scope: {
-            loginHref  : '@',
-            logoutHref : '@'
+            href  : '@'
         },
-        template: '<span>'
-                +   '<a ng-show="oauth.status !== \'loggedIn\'" href="{{logoutHref}}">Log in</a>'
-                +   '<a ng-show="oauth.status === \'loggedIn\'" ng-click="logout()">Log out</a>'
-                + '</span>'
+        template: '<a href="{{href}}" ng-click="logout()">{{oauth.status === "loggedIn" ? "Log out" : "Log in"}}</a>'
     };
     
     definition.link = function($scope) {
