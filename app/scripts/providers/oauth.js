@@ -247,7 +247,7 @@ angular.module('mw.oauth')
          * Tells whether the access token has expired.
          */
         OAuth.hasExpired = function(host) {
-            return (tokens[host] && tokens[host].expires_at && tokens[host].expires_at < new Date);
+            return (tokens[host] && tokens[host].expires_at && new Date(tokens[host].expires_at) < new Date);
         };
 
         /**
@@ -375,7 +375,7 @@ angular.module('mw.oauth')
          * Set timeouts to trigger events when the token has expired or will soon.
          */
         function setExpireTimeouts(tokenParams) {
-            var remainingSeconds = tokenParams.expires_at - new Date,
+            var remainingSeconds = new Date(tokenParams.expires_at) - new Date,
                 _tokenParams = tokenParams;
             
             tokenParams.expiresSoonTimeout = $timeout(function() {
