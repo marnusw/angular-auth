@@ -177,7 +177,7 @@ angular.module('mw.oauth')
                 tokens = $sessionStorage.oauth_tokens;
                 // Trigger the login or expired event on all host tokens.
                 for (var host in tokens) {
-                    OAuth.hasExpired(host) ? OAuth.expireToken(host) : OAuth.setToken(host, tokens[host]);
+                    OAuth.hasExpired(host) ? OAuth.expireToken(host) : setProcessedToken(tokens[host]);
                 }
             }
             
@@ -264,16 +264,27 @@ angular.module('mw.oauth')
          *   - token_type: (optional) The token type prepended to the access token in the header. (default: Bearer)
          * 
          * @description
-         * Sets and returns the access token. It tries (in order) the following strategies:
-         * - checks for token parameters passed to this method
+         * Sets a new access token for a host with parameters obtained from various methods.
          */
         OAuth.setToken = function(host, tokenParams) {
+            setProcessedToken( processRawParams(host, tokenParams) );
+        };
+        
+        /**
+         * @param {Object} tokenParams Processed token parameters.
+         * 
+         * @description
+         * Actually sets the processed access token parameters in the token store. This method is suitable for
+         * setting tokens found in the session storage or new parameters that have been processed.
+         */
+        function setProcessedToken(tokenParams) {
+            var host = tokenParams.host;
             tokens[host] && cancelExpireTimeouts(tokens[host]);
-            tokens[host] = processRawParams(host, tokenParams);
+            tokens[host] = tokenParams;
             OAuth.status = 'loggedIn';
             setExpireTimeouts(tokenParams);
             $rootScope.$broadcast('oauth:login', host, tokenParams.access_token);
-        };
+        }
 
         /**
          * @ngdoc method
@@ -349,8 +360,8 @@ angular.module('mw.oauth')
         function processRawParams(host, tokenParams) {
             var expires_at = tokenParams.expires_at = new Date;
             expires_at.setSeconds(expires_at.getSeconds() + parseInt(tokenParams.expires_in) - 60); // 60 seconds less to secure browser and response latency
-            tokenParams.host = host;
             tokenParams.token_type += ' ';
+            tokenParams.host = host;
             if (tokenParams.scope) {
                 tokenParams.scope = tokenParams.scope.split(' ');
             }
