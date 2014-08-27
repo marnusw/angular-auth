@@ -80,7 +80,7 @@ angular.module('mw.oauth')
         angular.extend(opts, options);
     };
 
-  this.$get = ['$rootScope',
+    this.$get = ['$rootScope',
                '$location',
                '$sessionStorage',
                '$timeout',
