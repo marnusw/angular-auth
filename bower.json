@@ -1,8 +1,8 @@
 {
-  "name": "oauth-ng",
-  "version": "0.2.6",
+  "name": "angular-auth",
+  "version": "0.1.0",
   "main": [
-    "dist/oauth-ng.js",
+    "dist/angular-auth.js",
     "dist/views/templates/default"
   ],
   "ignore": [
@@ -21,7 +21,6 @@
     "json3": "~3.2.4",
     "es5-shim": "~2.0.8",
     "timecop": "~0.1.1",
-    "bootstrap-sass": "~3.0.2",
     "jquery": "~1.9.1",
     "angular-mocks": "~1.2.22"
   },
