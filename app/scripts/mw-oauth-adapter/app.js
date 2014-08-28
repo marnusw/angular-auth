@@ -1,11 +1,10 @@
 /**
- * @license Marnus Weststrate - 2014
- * https://github.com/marnusw
+ * @license Angular Auth module for AngularJS
+ * (c) 2014 Marnus Weststrate (https://github.com/marnusw)
  * License: MIT
  */
 'use strict';
 
-// App modules
 angular.module('mw.oauth', ['ngStorage']);
 //angular.module('mw.oauth.profile', ['mw.oauth']);
 

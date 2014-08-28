@@ -7,7 +7,7 @@
 
 /**
  * @ngdoc module
- * @name oauth-mw
+ * @name mw.oauth
  * @description
  *
  * # mw.oauth
