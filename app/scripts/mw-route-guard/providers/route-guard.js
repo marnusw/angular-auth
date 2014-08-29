@@ -1,6 +1,6 @@
 /**
- * @license Marnus Weststrate - 2014
- * https://github.com/marnusw
+ * @license Angular Auth module for AngularJS
+ * (c) 2014 Marnus Weststrate (https://github.com/marnusw)
  * License: MIT
  */
 'use strict';
@@ -19,19 +19,23 @@ angular.module('mw.routeGuard')
  */
 .provider('RouteGuard', function RouteGuardProvider() {
     
-    var Rules = {};
+    var allowAll = false,
+        Rules = {};
     
     /**
      * @ngdoc method
      * @name RouteGuardProvider#addRule
      *
      * @param {string} route The route this rule applies to.
-     * @param {string} role Role allowed to access.
+     * @param {string|array} roles Role(s) allowed to access.
+     * @return {Object} self
+     * 
      * @description
-     * Add a rule to the route guard.
+     * Add a rule to the route guard. Access to this route will only be allowed if the user has a role
+     * that matches the role(s) provided.
      */
-    this.addRule = function(route, role) {
-        Rules[route] = role;
+    this.addRule = function(route, roles) {
+        Rules[route] = Array.isArray(roles) ? roles : [roles];
         return this;
     };
     
@@ -40,11 +44,45 @@ angular.module('mw.routeGuard')
      * @name RouteGuardProvider#addRules
      *
      * @param {Object} rules An object containing rules.
+     * @return {Object} self
+     * 
      * @description
      * Add multiple rules to the route guard at once.
      */
     this.addRules = function(rules) {
+        for (var r in rules) {
+            Array.isArray(roles[r]) || (roles[r] = [roles[r]]);
+        }
         angular.extend(Rules, rules);
+        return this;
+    };
+    
+    /**
+     * @ngdoc method
+     * @name RouteGuardProvider#allowAll
+     * 
+     * @return {Object} self
+     * 
+     * @description
+     * Call this method to allow access to all routes apart from those with defined rules.
+     */
+    this.allowAll = function() {
+        allowAll = true;
+        return this;
+    };
+    /**
+     * @ngdoc method
+     * @name RouteGuardProvider#denyAll
+     * 
+     * @return {Object} self
+     *
+     * @param {boolean} allowAll
+     * @description
+     * Call this method to deny access to all routes apart from those with defined rules.
+     */
+    this.denyAll = function() {
+        allowAll = false;
+        return this;
     };
     
     this.$get = ['$location',
@@ -73,17 +111,17 @@ angular.module('mw.routeGuard')
          *   - Links to the AuthService loginConfirmed event to retry a previously unauthorized route.
          *   - Links to the AuthService loginCancelled event to clear a previously unauthorized route.
          */
-        function registerEventHandlers() {
+        RouteGuard.registerEventHandlers = function() {
             if (rulesWereConfigured()) {
                 $rootScope.$on('$locationChangeStart', function(event, newUrl){
-                    if(RouteGuard.isAuthRoute(newUrl)) {
-                        if (!AuthService.hasIdentity()) {
-                            bufferRoute(newUrl);
-                            AuthService.requestLogin();
+                    console.log('Auth: ', newUrl);
+                    if(RouteGuard.requiresAuth(newUrl)) {
+                        if (AuthService.hasIdentity()) {
+                            RouteGuard.isAllowedRoute(newUrl) || event.preventDefault();
                         } else {
-                            if (!RouteGuard.isAllowedRoute(newUrl)) {
-                                event.preventDefault();
-                            }
+                            bufferRoute(newUrl);
+                            event.preventDefault();
+                            AuthService.requestLogin();
                         }
                     }
                 });
@@ -91,21 +129,6 @@ angular.module('mw.routeGuard')
                 $rootScope.$on('auth:loginConfirmed', retryBufferedRoute);
                 $rootScope.$on('auth:loginCancelled', clearBufferedRoute());
             }
-        }
-
-        /**
-         * @ngdoc method
-         * @name RouteGuard#isAuthRoute
-         *
-         * @param {string} route The route to check.
-         * 
-         * @returns {boolean} Whether the route requires authorization.
-         * 
-         * @description
-         * Is a given route registered as one that requires authorization?
-         */
-        RouteGuard.isAuthRoute = function(route) {
-            return !!Rules[route];
         };
 
         /**
@@ -119,8 +142,35 @@ angular.module('mw.routeGuard')
          * @description
          * Is a given route registered as one that requires authorization?
          */
-        RouteGuard.isAuthRoute = function(route) {
+        RouteGuard.requiresAuth = function(route) {
+            return !!Rules[route];
+        };
 
+        /**
+         * @ngdoc method
+         * @name RouteGuard#isAllowedRoute
+         *
+         * @param {string} route The route to check.
+         * 
+         * @returns {boolean} Whether the route requires authorization.
+         * 
+         * @description
+         * Checks the roles that are allowed to access this route against every role assigned to the current
+         * authenticated user. If a match is found access is allowed.
+         */
+        RouteGuard.isAllowedRoute = function(route) {
+            var allowedRoles = Rules[route];
+            if (!allowedRoles) {
+                return allowAll;
+            }
+            
+            var r, roles = AuthService.getUserRoles();
+            for (r in roles) {
+                if (allowedRoles.indexOf(roles[r]) !== -1) {
+                    return true;
+                }
+            }
+            return false;
         };
 
         /////////////////////////////////////////////////////
