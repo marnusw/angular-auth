@@ -16,6 +16,10 @@ angular.module('mw.routeGuard.authRoute')
  * A proxy object for the {@link ngRoute:$routeProvider $routeProvider} and the 
  * {@link mw.routeGuard:RouteGuardProvider RouteGuardProvider} which allows configuration of routes
  * and roles allowed to access them in one go.
+ * 
+ * Add a `roles` property to the route definition to specify which user roles are allowed to access
+ * that route, and use the `allowAll()` or `denyAll()` method to indicate how to handle routes 
+ * without rules.
  */
 .provider('AuthRoute', ['$routeProvider',
                         'RouteGuardProvider',
@@ -172,5 +176,9 @@ angular.module('mw.routeGuard.authRoute')
     this.otherwise = function(params) {
         $routeProvider.otherwise(params);
         return this;
+    };
+    
+    this.$get = function() {
+        return {};
     };
 }]);

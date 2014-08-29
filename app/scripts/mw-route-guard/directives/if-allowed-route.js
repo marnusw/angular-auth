@@ -12,21 +12,29 @@ angular.module('mw.routeGuard')
  * @name mwIfAllowedRoute
  *
  * @description
- *
+ * Hides the element if the route it points to is not allowed.
  */
-.directive('mwIfAllowedRoute', [function() {
+.directive('mwIfAllowedRoute', ['RouteGuard', '$rootScope', '$animate', function(RouteGuard, $rootScope, $animate) {
+    return function(scope, element, attrs) {
 
-    var definition = {
-        restrict: 'A'
-    };
-    
-    definition.link = function($scope, element, attrs) {
+        var href = attrs.href;
+        if (!href) {
+            var children = element.children();
+            href = children.length && children[0].href;
+        }
+        var path = href && href.substr(href.indexOf('#') + 1);
         
-        // 1. Check the href attribute for the path
-        // 2. Get the current user from the AuthService
-        // 3. Hide the element if not logged in or unauthorised
+        function showIfAllowed() {
+            var allowed = !path || RouteGuard.isAllowedRoute(path);
+            $animate[allowed ? 'removeClass' : 'addClass'](element, 'ng-hide');
+        }
+        
+        $rootScope.$on('auth:loggedOut', function() {
+            $animate.addClass(element, 'ng-hide');
+        });
+        
+        $rootScope.$on('auth:loggedIn', showIfAllowed);
+        showIfAllowed();
         
     };
-
-    return definition;
 }]);

@@ -114,12 +114,12 @@ angular.module('mw.routeGuard')
         RouteGuard.registerEventHandlers = function() {
             if (rulesWereConfigured()) {
                 $rootScope.$on('$locationChangeStart', function(event, newUrl){
-                    console.log('Auth: ', newUrl);
-                    if(RouteGuard.requiresAuth(newUrl)) {
+                    var newPath = $location.path();
+                    if(RouteGuard.requiresAuth(newPath)) {
                         if (AuthService.hasIdentity()) {
-                            RouteGuard.isAllowedRoute(newUrl) || event.preventDefault();
+                            RouteGuard.isAllowedRoute(newPath) || event.preventDefault();
                         } else {
-                            bufferRoute(newUrl);
+                            bufferRoute(newPath);
                             event.preventDefault();
                             AuthService.requestLogin();
                         }

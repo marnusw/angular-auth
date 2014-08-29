@@ -47,8 +47,7 @@ angular.module('mw.angular-auth')
         angular.extend(Options, options);
     };
 
-    this.$get = [
-      function() {
+    this.$get = [function() {
 
         /**
          * @ngdoc service
@@ -64,13 +63,32 @@ angular.module('mw.angular-auth')
         };
         
         /**
-         * @return {Object} self
+         * @ngdoc method
+         * @name AuthService#hasIdentity
          * 
-         * @description
+         * @returns {Boolean} 
          */
-        function init() {
-            return AuthService;
-        }
+        AuthService.hasIdentity = function() {
+            return true;
+        };
+        
+        /**
+         * @ngdoc method
+         * @name AuthService#requestLogin
+         */
+        AuthService.requestLogin = function() {
+            
+        };
+        
+        /**
+         * @ngdoc method
+         * @name AuthService#getUserRoles
+         * 
+         * @returns {Array}
+         */
+        AuthService.getUserRoles = function() {
+            return ['user'];
+        };
 
         /**
          * @ngdoc method
@@ -106,6 +124,6 @@ angular.module('mw.angular-auth')
             $rootScope.$broadcast('event:auth-loginCancelled', data);
         };
         
-        return init();
+        return AuthService;
     }];
 });
