@@ -8,21 +8,15 @@
 angular.module('mw.resourceGuard')
 
 /**
- * @ngdoc provider
- * @name ResourceGuard
- * @kind function
+ * @ngdoc service
+ * @name HttpBuffer
  *
  * @description
- *
- * Used to find the host portion of a provided request URL which will resolve to the host of the current 
- * location when a relative path is specified.
+ * Buffers $http requests so they can be retried later.
  */
-.factory('HttpBuffer', ['$injector', function($injector) {
+.factory('HttpBuffer', ['$http', function($http) {
     /** Holds all the requests, so they can be re-requested in future. */
     var buffer = [];
-
-    /** Service initialized later because of circular dependency problem. */
-    var $http;
 
     function retryHttpRequest(config, deferred) {
         function successCallback(response) {
@@ -31,7 +25,6 @@ angular.module('mw.resourceGuard')
         function errorCallback(response) {
             deferred.reject(response);
         }
-        $http = $http || $injector.get('$http');
         $http(config).then(successCallback, errorCallback);
     }
 
@@ -49,10 +42,8 @@ angular.module('mw.resourceGuard')
          * Abandon or reject (if reason provided) all the buffered requests.
          */
         rejectAll: function(reason) {
-            if (reason) {
-                for (var i = 0; i < buffer.length; ++i) {
-                    buffer[i].deferred.reject(reason);
-                }
+            for (var i = 0; i < buffer.length; ++i) {
+                buffer[i].deferred.reject(reason);
             }
             buffer = [];
         },
@@ -61,7 +52,7 @@ angular.module('mw.resourceGuard')
          */
         retryAll: function(updater) {
             for (var i = 0; i < buffer.length; ++i) {
-                retryHttpRequest(updater(buffer[i].config), buffer[i].deferred);
+                retryHttpRequest(updater ? updater(buffer[i].config) : buffer[i].config, buffer[i].deferred);
             }
             buffer = [];
         }
