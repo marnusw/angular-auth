@@ -14,7 +14,7 @@ angular.module('mw.routeGuard')
  * @description
  * Hides the element if the route it points to is not allowed.
  */
-.directive('mwIfAllowedRoute', ['RouteGuard', '$rootScope', '$animate', function(RouteGuard, $rootScope, $animate) {
+.directive('mwIfAllowedRoute', ['RouteGuard', '$animate', function(RouteGuard, $animate) {
     return function(scope, element, attrs) {
 
         var href = attrs.href;
@@ -29,11 +29,11 @@ angular.module('mw.routeGuard')
             $animate[allowed ? 'removeClass' : 'addClass'](element, 'ng-hide');
         }
         
-        $rootScope.$on('auth:loggedOut', function() {
+        scope.$on('auth:loggedOut', function() {
             $animate.addClass(element, 'ng-hide');
         });
         
-        $rootScope.$on('auth:loggedIn', showIfAllowed);
+        scope.$on('auth:loggedIn', showIfAllowed);
         showIfAllowed();
         
     };

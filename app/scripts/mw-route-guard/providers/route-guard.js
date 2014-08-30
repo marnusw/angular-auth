@@ -108,25 +108,25 @@ angular.module('mw.routeGuard')
          * Registers event handlers on the root scope:
          * 
          *   - Sets the global event handler for detecting location changes so authorization can be checked.
-         *   - Links to the AuthService loginConfirmed event to retry a previously unauthorized route.
-         *   - Links to the AuthService loginCancelled event to clear a previously unauthorized route.
+         *   - Links to the `auth:loggedIn` event to retry a previously unauthorized route.
+         *   - Links to the `auth:loginCancelled` event to clear a previously unauthorized route.
          */
         RouteGuard.registerEventHandlers = function() {
             if (rulesWereConfigured()) {
-                $rootScope.$on('$locationChangeStart', function(event, newUrl){
+                $rootScope.$on('$locationChangeStart', function(event){
                     var newPath = $location.path();
                     if(RouteGuard.requiresAuth(newPath)) {
-                        if (AuthService.hasIdentity()) {
+                        if (AuthService.status == 'loggedIn') {
                             RouteGuard.isAllowedRoute(newPath) || event.preventDefault();
                         } else {
                             bufferRoute(newPath);
                             event.preventDefault();
-                            AuthService.requestLogin();
+                            $rootScope.$broadcast('auth:loginRequired');
                         }
                     }
                 });
 
-                $rootScope.$on('auth:loginConfirmed', retryBufferedRoute);
+                $rootScope.$on('auth:loggedIn', retryBufferedRoute);
                 $rootScope.$on('auth:loginCancelled', clearBufferedRoute());
             }
         };
