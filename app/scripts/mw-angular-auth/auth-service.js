@@ -18,7 +18,7 @@
  * 
  * Requires the {@link https://github.com/gsklee/ngStorage `ngStorage`} module to be installed.
  */
-angular.module('mw.angular-auth')
+angular.module('mw.angular-auth', [])
  
 /**
  * @ngdoc provider
@@ -32,6 +32,7 @@ angular.module('mw.angular-auth')
 .provider('AuthService', function AuthServiceProvider() {
     // Option defaults
     var Options = {
+        authAdapter: 'OAuthAdapter'
     };
 
     /**
@@ -47,7 +48,7 @@ angular.module('mw.angular-auth')
         angular.extend(Options, options);
     };
 
-    this.$get = [function() {
+    this.$get = [authAdapter, function(AuthAdapter) {
 
         /**
          * @ngdoc service
@@ -59,8 +60,10 @@ angular.module('mw.angular-auth')
          */
 
         var AuthService = {
-            options : Options
-        };
+            options : Options,
+            status: 'loggedOut'
+        },
+        identity;
         
         /**
          * @ngdoc method
@@ -69,15 +72,17 @@ angular.module('mw.angular-auth')
          * @returns {Boolean} 
          */
         AuthService.hasIdentity = function() {
-            return true;
+            return !!identity;
         };
         
         /**
          * @ngdoc method
-         * @name AuthService#requestLogin
+         * @name AuthService#getIdentity
+         * 
+         * @returns {Object} A User instance.
          */
-        AuthService.requestLogin = function() {
-            
+        AuthService.getIdentity = function() {
+            return identity;
         };
         
         /**
@@ -87,41 +92,26 @@ angular.module('mw.angular-auth')
          * @returns {Array}
          */
         AuthService.getUserRoles = function() {
-            return ['user'];
+            return ['technician'];
         };
 
         /**
          * @ngdoc method
-         * @name OAuth#getAccessToken
-         * 
-         * @param data An optional argument to pass on to $broadcast which may be useful for
-         *             example if you need to pass through details of the user that was logged in
-         * 
-         * @return {string} The access token string if a token is available. (e.g. Bearer xxxxxxxxx)
-         * 
-         * @description
-         * Call this function to indicate that authentication was successfull and trigger a
-         * retry of all deferred requests.
+         * @name AuthService#logout
          */
-        AuthService.loginConfirmed = function(data, configUpdater) {
-            var updater = configUpdater || function(config) {
-                return config;
-            };
-            $rootScope.$broadcast('event:auth-loginConfirmed', data);
-            httpBuffer.retryAll(updater);
+        AuthService.logout = function() {
+            AuthAdapter.logout();
         };
-        
+
         /**
-         * @param data an optional argument to pass on to $broadcast.
-         * @param reason if provided, the requests are rejected; abandoned otherwise.
-         * 
          * @description
-         * Call this function to indicate that authentication should not proceed.
-         * All deferred requests will be abandoned or rejected (if reason is provided).
+         * This function is used to indicate that authentication will not proceed which triggers a
+         * `auth:loginCancelled` event with the optional reason.
+         * 
+         * @param reason an optional reason for cancelling the login.
          */
-        AuthService.loginCancelled = function(data, reason) {
-            httpBuffer.rejectAll(reason);
-            $rootScope.$broadcast('event:auth-loginCancelled', data);
+        AuthService.loginCancelled = function(reason) {
+            $rootScope.$broadcast('auth:loginCancelled', reason);
         };
         
         return AuthService;
