@@ -15,7 +15,7 @@ angular.module('mw.angular-auth.loginLink', ['mw.angular-auth'])
  * A link which displays text based on the login status on the Authentication Service.
  * 
  */
-.directive('mwLoginLink', ['AuthService', function(AuthService) {
+.directive('mwLoginLink', ['$rootScope', 'AuthService', function($rootScope, AuthService) {
 
     var directive = {
         restrict: 'AE',

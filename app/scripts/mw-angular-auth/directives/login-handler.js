@@ -25,9 +25,10 @@ angular.module('mw.angular-auth.loginHandler', ['mw.angular-auth'])
             scope: {
                 templateUrl: '@'
             }
-        };
+        },
+        active;
         
-    Directive.link = function(scope) {
+    Directive.link = function(scope, element) {
         var modalOpts = {
             templateUrl: scope.templateUrl || 'templates/angular-auth/login-handler.html',
             scope: scope,
@@ -38,15 +39,24 @@ angular.module('mw.angular-auth.loginHandler', ['mw.angular-auth'])
         
         modalOpts.controller = function ($scope, $modalInstance) {
             $scope.$on('auth:loggedIn', function() {
-                $modalInstance.close('Login successful');
+                $modalInstance.close();
             });
         };
         
         scope.$on('auth:loginRequired', function() {
-            var modalInst = openModal(modalOpts);
-            modalInst.result.catch(function(dismissReason) {
-                AuthService.loginCancelled(dismissReason);
-            });
+            if (!active) {
+                active = true;
+                element.hide();
+                var result = openModal(modalOpts).result;
+                result.catch(function(dismissReason) {
+                    AuthService.loginCancelled(dismissReason);
+                });
+                result.finally(function() {
+                    active = false;
+                    element.show();
+                });
+                
+            }
         });
     };
     
@@ -55,7 +65,7 @@ angular.module('mw.angular-auth.loginHandler', ['mw.angular-auth'])
     // Since it might not be desirable to use 
     // bootstrap.ui a fallback is available.
     
-    var $modal, // Optional dependency
+    var $modal,    // Optional dependency
         openModal; // Function
 
     if ($injector.has('$modal')) {

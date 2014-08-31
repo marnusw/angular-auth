@@ -53,12 +53,28 @@ angular.module('mw.angular-auth', [])
 
     this.$get = ['$rootScope', '$injector', function($rootScope, $injector) {
 
+        /**
+         * @ngdoc service
+         * @name AuthService
+         * 
+         * @property {Object} options Object with all configuration options.
+         *
+         * @description
+         */
+
+        var AuthService = {
+            options : Options,
+            status: 'loggedOut'
+        };
+        
         function registerEventHandlers() {
             $rootScope.$on('oauth:login', function() {
                 $rootScope.$broadcast('auth:loggedIn');
+                AuthService.status = 'loggedIn';
             });
             $rootScope.$on('oauth:logout', function() {
                 $rootScope.$broadcast('auth:loggedOut');
+                AuthService.status = 'loggedOut';
             });
             $rootScope.$on('oauth:expires-soon', function() {
                 $rootScope.$broadcast('auth:expires-soon');
@@ -86,20 +102,6 @@ angular.module('mw.angular-auth', [])
         registerEventHandlers();
         getAuthAdapter();
 
-        /**
-         * @ngdoc service
-         * @name AuthService
-         * 
-         * @property {Object} options Object with all configuration options.
-         *
-         * @description
-         */
-
-        var AuthService = {
-            options : Options,
-            status: 'loggedOut'
-        };
-        
         /**
          * @ngdoc method
          * @name AuthService#getRoles
