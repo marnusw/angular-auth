@@ -25,7 +25,7 @@ angular.module('mw.angular-auth.loginLink', ['mw.angular-auth'])
             loggedOutText  : '@', // Default: Log in
             loggedInText   : '@'  // Default: Log out
         },
-        template: '<a href="{{href}}" ng-click="click()">{{auth.status === "loggedIn" ? {{loggedInText || "Log out"}} : {{loggedOutText || "Log in"}}}}</a>',
+        template: '<a href="{{href}}" ng-click="click()">{{auth.status === "loggedIn" ? (loggedInText || "Log out") : (loggedOutText || "Log in")}}</a>',
         link: function($scope) {
             $scope.auth = AuthService;
             

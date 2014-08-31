@@ -14,9 +14,11 @@ angular.module('mw.resourceGuard')
  * @description
  * Buffers $http requests so they can be retried later.
  */
-.factory('HttpBuffer', ['$http', function($http) {
+.factory('HttpBuffer', ['$injector', function($injector) {
     /** Holds all the requests, so they can be re-requested in future. */
-    var buffer = [];
+    var buffer = [],
+        /** Instantiate later to avoid a circular dependency */
+        $http;
 
     function retryHttpRequest(config, deferred) {
         function successCallback(response) {
@@ -25,6 +27,7 @@ angular.module('mw.resourceGuard')
         function errorCallback(response) {
             deferred.reject(response);
         }
+        $http = $http || $injector.get('$http');
         $http(config).then(successCallback, errorCallback);
     }
 

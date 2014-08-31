@@ -61,10 +61,10 @@ angular.module('mw.routeGuard')
      * @ngdoc method
      * @name RouteGuardProvider#allowAll
      * 
-     * @return {Object} self
-     * 
      * @description
      * Call this method to allow access to all routes apart from those with defined rules.
+     * 
+     * @return {Object} self
      */
     this.allowAll = function() {
         allowAll = true;
@@ -73,12 +73,11 @@ angular.module('mw.routeGuard')
     /**
      * @ngdoc method
      * @name RouteGuardProvider#denyAll
-     * 
-     * @return {Object} self
      *
-     * @param {boolean} allowAll
      * @description
      * Call this method to deny access to all routes apart from those with defined rules.
+     * 
+     * @return {Object} self
      */
     this.denyAll = function() {
         allowAll = false;

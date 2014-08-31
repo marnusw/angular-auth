@@ -5,9 +5,9 @@
  */
 'use strict';
 
-angular.module('mw.user.profile')
+angular.module('mw.user.profile.directive', ['mw.user.profile'])
 
-.directive('mwProfile', ['ProfileProvider', 'AuthService', function(ProfileProvider, AuthService) {
+.directive('mwProfile', ['ProfileService', 'AuthService', function(ProfileService, AuthService) {
 
     var Directive = {
         restrict: 'AE',
@@ -23,7 +23,7 @@ angular.module('mw.user.profile')
     Directive.link = function($scope) {
         
         $scope.$watch(AuthService.status, function() {
-            $scope.profile = ProfileProvider.get();
+            $scope.profile = ProfileService.get();
         });
         
     };

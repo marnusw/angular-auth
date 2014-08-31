@@ -29,7 +29,7 @@ angular.module('mw.angular-auth.loginHandler', ['mw.angular-auth'])
         
     Directive.link = function(scope) {
         var modalOpts = {
-            templateUrl: scope.templatePath || 'templates/angular-auth/login-handler.html',
+            templateUrl: scope.templateUrl || 'templates/angular-auth/login-handler.html',
             scope: scope,
             backdrop: 'static',
             keyboard: false,

@@ -140,19 +140,14 @@ angular.module('mw.oauth')
          * @param {string} remaining The seconds remaining before expiry.
          */
         
-        /**
-         * @ngdoc event
-         * @name OAuth#oauth:expired
-         * @eventType broadcast on root scope
-         * @description
-         * Broadcasted whenever a token expires.
-         *
-         * @param {string} host The host name associated with the expired token.
-         */
-        
         var OAuth = {
             options : opts,
-            status  : 'init'
+            status  : 'init',
+            eventNames: {
+                login: 'oauth:login',
+                logout: 'oauth:logout',
+                expireSoon: 'oauth:expires-soon'
+            }
         };
         
         if (!opts.clientId) {
@@ -176,7 +171,7 @@ angular.module('mw.oauth')
                 tokens = $sessionStorage.oauth_tokens;
                 // Trigger the login or expired event on all host tokens.
                 for (var host in tokens) {
-                    OAuth.hasExpired(host) ? OAuth.expireToken(host) : setProcessedToken(tokens[host]);
+                    OAuth.hasExpired(host) ? OAuth.destroyToken(host) : setProcessedToken(tokens[host]);
                 }
             }
             
@@ -303,20 +298,6 @@ angular.module('mw.oauth')
 
         /**
          * @ngdoc method
-         * @name OAuth#expireToken
-         * 
-         * @param {string} host The host for which the token is expired.
-         * 
-         * @description
-         * Switch to the expired state when a token expires.
-         */
-        OAuth.expireToken = function(host) {
-            OAuth.status = 'expired';
-            $rootScope.$broadcast('oauth:expired', host);
-        };
-
-        /**
-         * @ngdoc method
          * @name OAuth#expiresSoon
          * 
          * @param {string} host The host for which the token will expire soon.
@@ -399,7 +380,7 @@ angular.module('mw.oauth')
             }, remainingSeconds - 60);
             
             tokenParams.expiredTimeout = $timeout(function() {
-                OAuth.expireToken(_tokenParams.host);
+                OAuth.destroyToken(_tokenParams.host);
             }, remainingSeconds);
         }
         

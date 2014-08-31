@@ -35,7 +35,8 @@ angular.module('mw.angular-auth', [])
             authAdapter: 'OAuthAdapter',
             profileProvider: 'ProfileService'
         },
-        profileProvider;
+        authAdapter,
+        profileProviders;
 
     /**
      * @ngdoc method
@@ -50,11 +51,40 @@ angular.module('mw.angular-auth', [])
         angular.extend(Options, options);
     };
 
-    this.$get = ['$rootScope', '$injector', Options.authAdapter, function($rootScope, $injector, AuthAdapter) {
+    this.$get = ['$rootScope', '$injector', function($rootScope, $injector) {
 
-        if ($injector.has(Options.profileProvider)) {
-            profileProvider = $injector.get(Options.profileProvider);
+        function registerEventHandlers() {
+            $rootScope.$on('oauth:login', function() {
+                $rootScope.$broadcast('auth:loggedIn');
+            });
+            $rootScope.$on('oauth:logout', function() {
+                $rootScope.$broadcast('auth:loggedOut');
+            });
+            $rootScope.$on('oauth:expires-soon', function() {
+                $rootScope.$broadcast('auth:expires-soon');
+            });
+        };
+        
+        function getAuthAdapter() {
+            authAdapter = $injector.get(Options.authAdapter);
+        };
+
+        function getProfileProviders() {
+            if (!profileProviders) {
+                profileProviders = [];
+                if (authAdapter.getRoles) {
+                    profileProviders.push(authAdapter);
+                }
+                if ($injector.has(Options.profileProvider)) {
+                    var provider = $injector.get(Options.profileProvider);
+                    provider.getRoles && profileProviders.push(provider);
+                }
+            }
+            return profileProviders;
         }
+
+        registerEventHandlers();
+        getAuthAdapter();
 
         /**
          * @ngdoc service
@@ -68,27 +98,6 @@ angular.module('mw.angular-auth', [])
         var AuthService = {
             options : Options,
             status: 'loggedOut'
-        },
-        identity;
-        
-        /**
-         * @ngdoc method
-         * @name AuthService#hasIdentity
-         * 
-         * @returns {Boolean} 
-         */
-        AuthService.hasIdentity = function() {
-            return !!identity;
-        };
-        
-        /**
-         * @ngdoc method
-         * @name AuthService#getIdentity
-         * 
-         * @returns {Object} A User instance.
-         */
-        AuthService.getIdentity = function() {
-            return identity;
         };
         
         /**
@@ -98,16 +107,10 @@ angular.module('mw.angular-auth', [])
          * @returns {Array}
          */
         AuthService.getRoles = function() {
-            var roles;
-            if (identity && identity.roles) {
-                return identity.roles;
-            } else if (AuthAdapter.getRoles) {
-                roles = AuthAdapter.getRoles();
-                if (roles !== false) {
-                    return roles;
-                }
-            } else if (profileProvider && profileProvider.getRoles) {
-                roles = profileProvider.getRoles();
+            var providers = getProfileProviders(),
+                p, roles;
+            for (p in providers) {
+                roles = providers[p].getRoles();
                 if (roles !== false) {
                     return roles;
                 }
@@ -120,7 +123,7 @@ angular.module('mw.angular-auth', [])
          * @name AuthService#logout
          */
         AuthService.logout = function() {
-            AuthAdapter.logout();
+            authAdapter.logout();
         };
 
         /**
