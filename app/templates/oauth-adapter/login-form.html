@@ -8,7 +8,10 @@
         <label for="password">Password</label>
         <input ng-model="credentials.password" type="password" class="form-control" id="password">
     </div>
-    <div><button ng-click="login()" class="btn btn-default">Log in</button></div>
+    <div>
+        <button ng-click="$dismiss()" class="btn btn-default">Cancel</button>
+        <button ng-click="login()" class="btn btn-primary" type="submit">Log in</button>
+    </div>
     <div>
         <br>
         <span ng-if="registerUrl">Don't have an account? <a href="{{registerUrl}}">Register here</a></span>
