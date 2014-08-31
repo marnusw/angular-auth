@@ -1,0 +1,6 @@
+<div ng-if="profile">
+    Logged in as <span>{{ profile.displayName || profile.firstName || profile.name }}</span>
+</div>
+<div ng-if="!profile">
+    You are not logged in.
+</div>

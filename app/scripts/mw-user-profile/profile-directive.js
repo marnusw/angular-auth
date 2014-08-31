@@ -7,15 +7,20 @@
 
 angular.module('mw.user.profile')
 
-.directive('mwProfile', ['ProfileProvider', function(ProfileProvider) {
+.directive('mwProfile', ['ProfileProvider', 'AuthService', function(ProfileProvider, AuthService) {
 
     var Directive = {
         restrict: 'AE',
         replace: true,
-        scope: true
+        scope: true,
+        templateUrl: AuthService.options.profileTemplate || 'templates/user-profile/profile.html'
     };
     
     Directive.link = function($scope, element, attrs) {
+        
+        $scope.$watch(AuthService.status, function() {
+            $scope.profile = ProfileProvider.get();
+        });
         
     };
 
