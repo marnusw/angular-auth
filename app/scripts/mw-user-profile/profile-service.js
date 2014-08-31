@@ -5,21 +5,25 @@
  */
 'use strict';
 
-angular.module('mw.user.profile', ['mw.angular-auth'])
+angular.module('mw.user.profile')
 
-.factory('ProfileService', ['$rootScope', 'AuthService', function($rootScope, AuthService) {
+.factory('ProfileService', ['$rootScope', '$http', 'AuthService', function($rootScope, $http, AuthService) {
     
     var ProfileService = {},
         profile,
         promise;
 
-    $rootScope.$on('auth:loggedOut', function() {
-        profile = null;
-    });
+    ProfileService.registerEventHandlers = function() {
+        $rootScope.$on('auth:loggedOut', function() {
+            profile = null;
+        });
 
-    $rootScope.$on('auth:loggedIn', function() {
-        ProfileService.find();
-    });
+        $rootScope.$on('auth:loggedIn', function() {
+            if (!profile) {
+                ProfileService.find();
+            }
+        });
+    };
 
     ProfileService.find = function() {
         if (!AuthService.options.profilePath) {
@@ -28,8 +32,9 @@ angular.module('mw.user.profile', ['mw.angular-auth'])
         promise = $http.get(AuthService.options.profilePath);
         profile = {};
         promise.success(function(response) {
-            angular.extend(profile, response.data);
+            angular.extend(profile, response);
             promise = null;
+            $rootScope.$broadcast('auth:loggedIn');
         });
         return promise;
     };
@@ -39,12 +44,12 @@ angular.module('mw.user.profile', ['mw.angular-auth'])
     };
 
     ProfileService.getRoles = function() {
-        if (profile && profile.getRoles) {
-            return profile.getRoles();
+        if (profile && profile.roles) {
+            return profile.roles;
         } else if (promise) {
             var roles = [];
             promise.then(function() {
-                angular.extend(roles, profile.getRoles ? profile.getRoles() : []);
+                profile.roles && angular.extend(roles, profile.roles);
             });
             return roles;
         }

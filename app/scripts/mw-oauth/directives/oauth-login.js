@@ -23,7 +23,6 @@ angular.module('mw.oauth')
         $scope.oauth = OAuth;
 
         $scope.login = function() {
-            console.log('login');
             delete $scope.errorMsg;
             OAuthEndpointLogin.login($scope.credentials)
             .then(function(response) {

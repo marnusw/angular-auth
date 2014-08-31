@@ -35,11 +35,12 @@ angular.module('mw.angular-auth.loginHandler', ['mw.angular-auth'])
             backdrop: 'static',
             keyboard: false,
             size: 'sm'
-        };
+        },
+        modalInst;
         
-        modalOpts.controller = function ($scope, $modalInstance) {
+        modalOpts.controller = function ($scope) {
             $scope.$on('auth:loggedIn', function() {
-                $modalInstance.close();
+                modalInst && modalInst.close();
             });
         };
         
@@ -47,15 +48,15 @@ angular.module('mw.angular-auth.loginHandler', ['mw.angular-auth'])
             if (!active) {
                 active = true;
                 element.hide();
-                var result = openModal(modalOpts).result;
-                result.catch(function(dismissReason) {
+                modalInst = openModal(modalOpts);
+                modalInst.result.catch(function(dismissReason) {
                     AuthService.loginCancelled(dismissReason);
                 });
-                result.finally(function() {
+                modalInst.result.finally(function() {
                     active = false;
+                    modalInst = null;
                     element.show();
                 });
-                
             }
         });
     };
