@@ -7,12 +7,12 @@
 
 angular.module('mw.oauth')
 
-.factory('OAuthInterceptor', ['OAuth', 'OAuthRequestHost', function(OAuth, OAuthRequestHost) {
+.factory('OAuthInterceptor', ['OAuth', function(OAuth) {
 
     var service = {};
 
     service.request = function(config) {
-        var host = OAuthRequestHost.getHost(config.url);
+        var host = OAuth.getRequestHost(config.url);
         config.headers.Authorization = OAuth.getAccessToken(host);
         return config;
     };

@@ -7,9 +7,9 @@
 
 angular.module('mw.user.profile', ['mw.angular-auth'])
 
-.factory('ProfileProvider', ['$rootScope', 'AuthService', function($rootScope, AuthService) {
+.factory('ProfileService', ['$rootScope', 'AuthService', function($rootScope, AuthService) {
     
-    var ProfileProvider = {},
+    var ProfileService = {},
         profile,
         promise;
 
@@ -18,10 +18,10 @@ angular.module('mw.user.profile', ['mw.angular-auth'])
     });
 
     $rootScope.$on('auth:loggedIn', function() {
-        ProfileProvider.find();
+        ProfileService.find();
     });
 
-    ProfileProvider.find = function() {
+    ProfileService.find = function() {
         if (!AuthService.options.profilePath) {
             return null;
         }
@@ -34,11 +34,11 @@ angular.module('mw.user.profile', ['mw.angular-auth'])
         return promise;
     };
 
-    ProfileProvider.get = function() {
+    ProfileService.get = function() {
         return profile;
     };
 
-    ProfileProvider.getRoles = function() {
+    ProfileService.getRoles = function() {
         if (profile && profile.getRoles) {
             return profile.getRoles();
         } else if (promise) {
@@ -51,5 +51,5 @@ angular.module('mw.user.profile', ['mw.angular-auth'])
         return false;
     };
 
-    return ProfileProvider;
+    return ProfileService;
 }]);

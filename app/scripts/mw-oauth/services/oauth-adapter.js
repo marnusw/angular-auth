@@ -21,7 +21,7 @@ angular.module('mw.oauth')
     
     OAuthAdapter.getRoles = function() {
         var roles = OAuth.getScope();
-        return roles.length ? roles : false;
+        return roles && roles.length ? roles : false;
     };
     
     OAuthAdapter.logout = function() {

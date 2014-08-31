@@ -33,7 +33,7 @@ angular.module('mw.angular-auth', [])
     // Option defaults
     var Options = {
             authAdapter: 'OAuthAdapter',
-            profileProvider: 'ProfileProvider'
+            profileProvider: 'ProfileService'
         },
         profileProvider;
 
@@ -50,7 +50,7 @@ angular.module('mw.angular-auth', [])
         angular.extend(Options, options);
     };
 
-    this.$get = ['$rootScope', '$injector', authAdapter, function($rootScope, $injector, AuthAdapter) {
+    this.$get = ['$rootScope', '$injector', Options.authAdapter, function($rootScope, $injector, AuthAdapter) {
 
         if ($injector.has(Options.profileProvider)) {
             profileProvider = $injector.get(Options.profileProvider);

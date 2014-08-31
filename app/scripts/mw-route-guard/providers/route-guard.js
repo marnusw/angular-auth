@@ -164,7 +164,7 @@ angular.module('mw.routeGuard')
                 return allowAll;
             }
             
-            var r, roles = AuthService.getUserRoles();
+            var r, roles = AuthService.getRoles();
             for (r in roles) {
                 if (allowedRoles.indexOf(roles[r]) !== -1) {
                     return true;
