@@ -10,13 +10,14 @@ angular.module('mw.oauth')
 .directive('mwOauthLogin', ['OAuth', 'OAuthEndpointLogin', '$compile', '$http',
   function(OAuth, OAuthEndpointLogin, $compile, $http) {
 
-    var definition = {
+    var Directive = {
         restrict: 'AE',
         replace: true,
-        scope: true
+        scope: true,
+        transclude: true
     };
     
-    definition.link = function($scope, element, attrs) {
+    Directive.link = function($scope, element, attrs) {
 
         $scope.registerUrl = attrs.registerUrl || OAuth.options.registerUrl;
         $scope.credentials = {};
@@ -45,5 +46,5 @@ angular.module('mw.oauth')
         });
     };
 
-    return definition;
+    return Directive;
 }]);

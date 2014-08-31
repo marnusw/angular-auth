@@ -14,8 +14,8 @@ angular.module('mw.oauth')
  *
  * @description
  */
-.factory('OAuthEndpointLogin', ['OAuth', 'OAuthRequestHost', '$http', '$q',
-  function(OAuth, OAuthRequestHost, $http, $q) {
+.factory('OAuthEndpointLogin', ['OAuth', '$http', '$q',
+  function(OAuth, $http, $q) {
 
     var options = OAuth.options,
         service = {};
@@ -42,7 +42,7 @@ angular.module('mw.oauth')
         
         request.then(function(successResponse) {
             result.resolve({
-                host        : OAuthRequestHost.getHost(options.authPath),
+                host        : OAuth.getRequestHost(options.authPath),
                 tokenParams : successResponse.data
             });
         }, function(errorResponse) {
@@ -73,7 +73,7 @@ angular.module('mw.oauth')
         
         request.then(function(successResponse) {
             result.resolve({
-                host:        OAuthRequestHost.getHost(options.authPath),
+                host:        OAuth.getRequestHost(options.authPath),
                 tokenParams: successResponse.data
             });
         }, function(errorResponse) {
@@ -92,7 +92,7 @@ angular.module('mw.oauth')
      */
     service.logout = function() {
         options.logoutPath && $http.post(options.logoutPath);
-        return OAuthRequestHost.getHost(options.logoutPath || options.authPath);
+        return OAuth.getRequestHost(options.logoutPath || options.authPath);
     };
 
     return service;

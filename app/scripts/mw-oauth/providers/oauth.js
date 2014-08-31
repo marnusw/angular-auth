@@ -34,9 +34,9 @@ angular.module('mw.oauth')
     // Option defaults
     var opts = {
         authPath         : '/oauth',
-        loginTemplate    : 'views/templates/login-form.html',
+        loginTemplate    : 'templates/oauth-adapter/login-form.html',
         authorizePath    : '/oauth/authorize',
-        redirectTemplate : 'views/templates/redirect-link.html',
+        redirectTemplate : 'templates/oauth-adapter/redirect-link.html',
         text             : 'Sign In'
     };
 
@@ -84,8 +84,7 @@ angular.module('mw.oauth')
                '$location',
                '$sessionStorage',
                '$timeout',
-               'OAuthRequestHost',
-      function($rootScope, $location, $sessionStorage, $timeout, OAuthRequestHost) {
+      function($rootScope, $location, $sessionStorage, $timeout) {
 
         /**
          * @ngdoc service
@@ -183,7 +182,7 @@ angular.module('mw.oauth')
             
             var uriParams = getTokenFromUri();
             if (uriParams && uriParams.access_token) {
-                var host = OAuthRequestHost.getHost(opts.site);
+                var host = OAuth.getRequestHost(opts.site);
                 OAuth.setToken(host, uriParams);
             }
             
@@ -329,6 +328,23 @@ angular.module('mw.oauth')
         OAuth.expiresSoon = function(host, remaining) {
             $rootScope.$broadcast('oauth:expires-soon', host, remaining);
         };
+
+        /**
+         * @ngdoc method
+         * @name OAuth#getRequestHost
+         * 
+         * @description
+         * Get the host portion of a request URI. If the URI is omitted or a relative URI is provided the 
+         * host portion of the current location is returned.
+         *
+         * @param {string} url The request URL to process.
+         * @return {string} The host portion of the URL.
+         */
+        OAuth.getRequestHost = function(url) {
+            var matches = (url || '').match(/^(?:[a-z]+:)?\/\/([^\/?#]+)(?:[\/?#]|$)/i);
+            return matches ? matches[1] : $location.host();
+        };
+    
 
         /////////////////////////////////////////////////////
 

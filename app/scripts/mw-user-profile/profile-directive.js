@@ -13,10 +13,14 @@ angular.module('mw.user.profile')
         restrict: 'AE',
         replace: true,
         scope: true,
-        templateUrl: AuthService.options.profileTemplate || 'templates/user-profile/profile.html'
+        templateUrl: getTemplate
     };
     
-    Directive.link = function($scope, element, attrs) {
+    function getTemplate(el, attrs) {
+        return attrs.templateUrl || 'templates/user-profile/profile.html';
+    }
+    
+    Directive.link = function($scope) {
         
         $scope.$watch(AuthService.status, function() {
             $scope.profile = ProfileProvider.get();

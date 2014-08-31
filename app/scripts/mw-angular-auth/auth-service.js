@@ -32,8 +32,10 @@ angular.module('mw.angular-auth', [])
 .provider('AuthService', function AuthServiceProvider() {
     // Option defaults
     var Options = {
-        authAdapter: 'OAuthAdapter'
-    };
+            authAdapter: 'OAuthAdapter',
+            profileProvider: 'ProfileProvider'
+        },
+        profileProvider;
 
     /**
      * @ngdoc method
@@ -48,7 +50,11 @@ angular.module('mw.angular-auth', [])
         angular.extend(Options, options);
     };
 
-    this.$get = [authAdapter, function(AuthAdapter) {
+    this.$get = ['$rootScope', '$injector', authAdapter, function($rootScope, $injector, AuthAdapter) {
+
+        if ($injector.has(Options.profileProvider)) {
+            profileProvider = $injector.get(Options.profileProvider);
+        }
 
         /**
          * @ngdoc service
@@ -87,12 +93,26 @@ angular.module('mw.angular-auth', [])
         
         /**
          * @ngdoc method
-         * @name AuthService#getUserRoles
+         * @name AuthService#getRoles
          * 
          * @returns {Array}
          */
-        AuthService.getUserRoles = function() {
-            return ['technician'];
+        AuthService.getRoles = function() {
+            var roles;
+            if (identity && identity.roles) {
+                return identity.roles;
+            } else if (AuthAdapter.getRoles) {
+                roles = AuthAdapter.getRoles();
+                if (roles !== false) {
+                    return roles;
+                }
+            } else if (profileProvider && profileProvider.getRoles) {
+                roles = profileProvider.getRoles();
+                if (roles !== false) {
+                    return roles;
+                }
+            }
+            return ['guest'];
         };
 
         /**
