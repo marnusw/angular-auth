@@ -23,15 +23,19 @@ angular.module('mw.oauth')
         $scope.oauth = OAuth;
 
         $scope.login = function() {
-            delete $scope.errorMsg;
-            OAuthEndpointLogin.login($scope.credentials)
-            .then(function(response) {
-                $scope.credentials = {};
-                OAuth.setToken(response.host, response.tokenParams);
-            }, function(reason) {
-                $scope.errorMsg = reason;
-                $scope.credentials.password = '';
-            });
+            if (!$scope.credentials.username || !$scope.credentials.password) {
+                $scope.errorMsg = 'Please provide a username and password';
+            } else {
+                delete $scope.errorMsg;
+                OAuthEndpointLogin.login($scope.credentials)
+                .then(function(response) {
+                    $scope.credentials = {};
+                    OAuth.setToken(response.host, response.tokenParams);
+                }, function(reason) {
+                    $scope.errorMsg = reason;
+                    $scope.credentials.password = '';
+                });
+            }
         };
 
         $scope.logout = function() {
