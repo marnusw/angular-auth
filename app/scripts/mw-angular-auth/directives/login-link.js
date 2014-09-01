@@ -33,7 +33,7 @@ angular.module('mw.angular-auth.loginLink', ['mw.angular-auth'])
             
             $scope.click = function(event) {
                 AuthService.logout();
-                if ($scope.href == '') {
+                if ($scope.href == '' || $scope.href == '/') {
                     $rootScope.$broadcast('auth:loginRequired');
                     event.preventDefault();
                 }
