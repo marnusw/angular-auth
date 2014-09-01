@@ -14,5 +14,7 @@ angular.module('mw.resourceGuard', [])
 
 .run(['$rootScope', 'HttpBuffer', function($rootScope, HttpBuffer) {
     $rootScope.$on('auth:loginCancelled', HttpBuffer.rejectAll);
-    $rootScope.$on('auth:loggedIn', HttpBuffer.retryAll);
+    $rootScope.$on('auth:loggedIn', function() {
+        HttpBuffer.retryAll();
+    });
 }]);
