@@ -19,6 +19,10 @@ angular.module('mw.oauth')
 
     var OAuthAdapter = {};
     
+    OAuthAdapter.isLoggedIn = function() {
+        return OAuth.status == 'loggedIn';
+    };
+    
     OAuthAdapter.getRoles = function() {
         var roles = OAuth.getScope();
         return roles && roles.length ? roles : false;

@@ -51,7 +51,7 @@ angular.module('mw.angular-auth', [])
         angular.extend(Options, options);
     };
 
-    this.$get = ['$rootScope', '$injector', function($rootScope, $injector) {
+    this.$get = ['$rootScope', '$injector', '$timeout', function($rootScope, $injector, $timeout) {
 
         /**
          * @ngdoc service
@@ -101,6 +101,12 @@ angular.module('mw.angular-auth', [])
 
         registerEventHandlers();
         getAuthAdapter();
+        if (authAdapter.isLoggedIn()) {
+            $timeout(function() {
+                $rootScope.$broadcast('auth:loggedIn');
+            }, 1500);
+            AuthService.status = 'loggedIn';
+        }
 
         /**
          * @ngdoc method

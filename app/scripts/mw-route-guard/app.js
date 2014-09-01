@@ -12,6 +12,7 @@ angular.module('mw.routeGuard.authRoute', ['mw.routeGuard', 'ngRoute']);
 angular.module('mw.routeGuard', [])
 
 // Instantiate the RouteGuard service and register the event handler from the moment the application starts.
-.run(['RouteGuard', function(RouteGuard) {
+.run(['$rootScope', '$route', 'RouteGuard', function($rootScope, $route, RouteGuard) {
     RouteGuard.registerEventHandlers();
+    $rootScope.$on('auth:loggedIn', $route.reload);
 }]);
