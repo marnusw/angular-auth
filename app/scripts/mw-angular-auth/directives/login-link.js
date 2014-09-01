@@ -14,6 +14,8 @@ angular.module('mw.angular-auth.loginLink', ['mw.angular-auth'])
  * @description
  * A link which displays text based on the login status on the Authentication Service.
  * 
+ * If an `href` attribute is specified clicking the link will navigate to the target path. 
+ * When it is omitted an `auth:loginRequired' event is fired without navigation.
  */
 .directive('mwLoginLink', ['$rootScope', 'AuthService', function($rootScope, AuthService) {
 
@@ -25,14 +27,15 @@ angular.module('mw.angular-auth.loginLink', ['mw.angular-auth'])
             loggedOutText  : '@', // Default: Log in
             loggedInText   : '@'  // Default: Log out
         },
-        template: '<a href="{{href}}" ng-click="click()">{{auth.status === "loggedIn" ? (loggedInText || "Log out") : (loggedOutText || "Log in")}}</a>',
+        template: '<a href="{{href}}" ng-click="click($event)">{{auth.status === "loggedIn" ? (loggedInText || "Log out") : (loggedOutText || "Log in")}}</a>',
         link: function($scope) {
             $scope.auth = AuthService;
             
-            $scope.click = function() {
+            $scope.click = function(event) {
                 AuthService.logout();
-                if (!$scope.href) {
+                if ($scope.href == '') {
                     $rootScope.$broadcast('auth:loginRequired');
+                    event.preventDefault();
                 }
             };
         }
