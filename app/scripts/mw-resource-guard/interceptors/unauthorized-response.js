@@ -22,7 +22,7 @@ angular.module('mw.resourceGuard')
 .factory('UnauthInterceptor', ['$rootScope', '$q', 'HttpBuffer', function($rootScope, $q, HttpBuffer) {
     return {
         responseError: function(rejection) {
-            if (rejection.status === 401 && !rejection.config.ignoreAuthModule) {
+            if (rejection.status === 401 && !rejection.config.ignoreResourceGuard) {
                 var deferred = $q.defer();
                 HttpBuffer.append(rejection.config, deferred);
                 $rootScope.$broadcast('auth:loginRequired', rejection);

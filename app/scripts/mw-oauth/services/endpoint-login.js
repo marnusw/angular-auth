@@ -37,7 +37,7 @@ angular.module('mw.oauth')
                 client_id  : options.clientId,
                 scope      : options.scope
             }),
-            request = $http.post(options.authPath, requestData),
+            request = $http.post(options.authPath, requestData, {ignoreResourceGuard: true}),
             result = $q.defer();
         
         request.then(function(successResponse) {
