@@ -1,4 +1,4 @@
-<form ng-if="oauth.status !== 'loggedIn'" role="form">
+<form ng-if="oauth.status !== 'loggedIn'" ng-submit="$event.preventDefault(); login()" role="form">
     <alert ng-if="errorMsg" type="danger">{{errorMsg}}</alert>
     <div class="form-group">
         <label for="username">Username</label>
@@ -9,8 +9,8 @@
         <input ng-model="credentials.password" type="password" class="form-control" id="password">
     </div>
     <div>
-        <button ng-click="$dismiss()" class="btn btn-default">Cancel</button>
-        <button ng-click="login()" class="btn btn-primary" type="submit">Log in</button>
+        <a ng-click="$dismiss()" class="btn btn-default">Cancel</a>
+        <button class="btn btn-primary" type="submit">Log in</button>
     </div>
     <div>
         <br>

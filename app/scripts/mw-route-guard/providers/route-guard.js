@@ -126,7 +126,10 @@ angular.module('mw.routeGuard')
                 });
 
                 $rootScope.$on('auth:loggedIn', retryBufferedRoute);
-                $rootScope.$on('auth:loginCancelled', clearBufferedRoute());
+                $rootScope.$on('auth:loginCancelled', function() {
+                    clearBufferedRoute();
+                    $location.path(AuthService.options.loggedOutPath || '/loggedOut');
+                });
             }
         };
 
