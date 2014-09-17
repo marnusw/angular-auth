@@ -7,54 +7,68 @@
 
 angular.module('mw.user.profile')
 
-.factory('ProfileService', ['$rootScope', '$http', 'AuthService', function($rootScope, $http, AuthService) {
-    
-    var ProfileService = {},
-        profile,
-        promise;
+.factory('ProfileService', ['$rootScope', '$http', '$q', 'AuthService', function($rootScope, $http, $q, AuthService) {
 
-    ProfileService.registerEventHandlers = function() {
-        $rootScope.$on('auth:loggedOut', function() {
-            profile = null;
-        });
+  var ProfileService = {},
+      profile;
 
-        $rootScope.$on('auth:loggedIn', function() {
-            if (!profile) {
-                ProfileService.find();
-            }
-        });
-    };
+  ProfileService.registerEventHandlers = function() {
+    $rootScope.$on('auth:loggedOut', function() {
+      profile = null;
+    });
 
-    ProfileService.find = function() {
-        if (!AuthService.options.profilePath) {
-            return null;
-        }
-        promise = $http.get(AuthService.options.profilePath);
-        profile = {};
-        promise.success(function(response) {
-            angular.extend(profile, response);
-            promise = null;
-            $rootScope.$broadcast('auth:loggedIn');
-        });
-        return promise;
-    };
+    $rootScope.$on('auth:loggedIn', function() {
+      ProfileService.find();
+    });
+  };
 
-    ProfileService.get = function() {
-        return profile;
-    };
+  ProfileService.find = function() {
+    if (!profile) {
+      if (!AuthService.options.profilePath || !AuthService.hasIdentity()) {
+        return null;
+      }
+      var request = $http.get(AuthService.options.profilePath),
+          dfrd = $q.defer();
+      profile = {
+        $promise: dfrd.promise,
+        resolved: false
+      };
+      request.then(function(response) {
+        angular.extend(profile, response.data);
+        profile.resolved = true;
+        dfrd.resolve(profile);
+        // This is so listeners will detect the new roles, rather use an authStateChange type event.
+        $rootScope.$broadcast('auth:loggedIn');
+      });
+    }
+    return profile.$promise;
+  };
 
-    ProfileService.getRoles = function() {
-        if (profile && profile.roles) {
-            return profile.roles;
-        } else if (promise) {
-            var roles = [];
-            promise.then(function() {
-                profile.roles && angular.extend(roles, profile.roles);
-            });
-            return roles;
-        }
-        return false;
-    };
+  ProfileService.get = function(callback) {
+    if (!profile) {
+      ProfileService.find();
+    }
+    if (profile && callback) {
+      profile.$promise.then(callback);
+    }
+    return profile;
+  };
 
-    return ProfileService;
+  ProfileService.getRoles = function() {
+    var profile = ProfileService.get();
+    if (!profile) {
+      return false;
+    }
+    if (profile.roles) {
+      return profile.roles;
+    }
+    var profile = ProfileService.get(),
+        roles = [];
+    profile.$promise.then(function(profile) {
+      profile.roles && angular.extend(roles, profile.roles);
+    });
+    return roles;
+  };
+
+  return ProfileService;
 }]);

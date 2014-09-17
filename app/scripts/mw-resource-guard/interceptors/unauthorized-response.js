@@ -18,6 +18,9 @@ angular.module('mw.resourceGuard')
  * Incorporate:
  * https://github.com/it-crowd/angular-http-auth/blob/a713fe40a60db1ddc84d22b95495bdb1c7a63e8a/src/http-auth-interceptor.js
  * https://github.com/christianrondeau/angular-http-auth/blob/61ba732dbc20313a96ed0fe5a5cdd219228d8c39/src/http-auth-interceptor.js
+ * 
+ * Perhaps we should also ignore 401 invalid_grant responses when logins fail. When resources require login the response
+ * is 401 Forbidden which would then be handled here.
  */
 .factory('UnauthInterceptor', ['$rootScope', '$q', 'HttpBuffer', function($rootScope, $q, HttpBuffer) {
     return {

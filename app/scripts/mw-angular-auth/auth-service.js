@@ -19,7 +19,7 @@
  * Requires the {@link https://github.com/gsklee/ngStorage `ngStorage`} module to be installed.
  */
 angular.module('mw.angular-auth', [])
- 
+
 /**
  * @ngdoc provider
  * @name OAuthProvider
@@ -30,121 +30,131 @@ angular.module('mw.angular-auth', [])
  * Used for configuring the AuthService during the config phase.
  */
 .provider('AuthService', function AuthServiceProvider() {
-    // Option defaults
-    var Options = {
-            authAdapter: 'OAuthAdapter',
-            profileProvider: 'ProfileService'
-        },
-        authAdapter,
-        profileProviders;
+  // Option defaults
+  var Options = {
+        authAdapter: 'OAuthAdapter',
+        profileProvider: 'ProfileService'
+      },
+      authAdapter,
+      profileProviders;
+
+  /**
+   * @ngdoc method
+   * @name OAuthProvider#setOptions
+   *
+   * @param {Object} options OAuth configuration options:
+   * 
+   * @description
+   * Configure the AuthService provider during the config phase.
+   */
+  this.setOptions = function(options) {
+    angular.extend(Options, options);
+  };
+
+  this.$get = ['$rootScope', '$injector', '$timeout', function($rootScope, $injector, $timeout) {
+
+    /**
+     * @ngdoc service
+     * @name AuthService
+     * 
+     * @property {Object} options Object with all configuration options.
+     *
+     * @description
+     */
+
+    var AuthService = {
+      options: Options,
+      status: 'loggedOut'
+    };
+
+    function registerEventHandlers() {
+      $rootScope.$on('oauth:login', function() {
+        AuthService.status = 'loggedIn';
+        $rootScope.$broadcast('auth:loggedIn');
+      });
+      $rootScope.$on('oauth:logout', function() {
+        AuthService.status = 'loggedOut';
+        $rootScope.$broadcast('auth:loggedOut');
+      });
+      $rootScope.$on('oauth:expires-soon', function() {
+        $rootScope.$broadcast('auth:expires-soon');
+      });
+    }
+
+    function getAuthAdapter() {
+      authAdapter = $injector.get(Options.authAdapter);
+    }
+
+    function getProfileProviders() {
+      if (!profileProviders) {
+        profileProviders = [];
+        if (authAdapter.getRoles) {
+          profileProviders.push(authAdapter);
+        }
+        if ($injector.has(Options.profileProvider)) {
+          var provider = $injector.get(Options.profileProvider);
+          provider.getRoles && profileProviders.push(provider);
+        }
+      }
+      return profileProviders;
+    }
+
+    registerEventHandlers();
+    getAuthAdapter();
+    if (authAdapter.isLoggedIn()) {
+      AuthService.status = 'loggedIn';
+      $timeout(function() {
+        $rootScope.$broadcast('auth:loggedIn');
+      }, 1500);
+    }
 
     /**
      * @ngdoc method
-     * @name OAuthProvider#setOptions
-     *
-     * @param {Object} options OAuth configuration options:
+     * @name AuthService#getRoles
      * 
-     * @description
-     * Configure the AuthService provider during the config phase.
+     * @returns {Array}
      */
-    this.setOptions = function(options) {
-        angular.extend(Options, options);
+    AuthService.getRoles = function() {
+      var providers = getProfileProviders(),
+          p, roles;
+      for (p in providers) {
+        roles = providers[p].getRoles();
+        if (roles !== false) {
+          return roles;
+        }
+      }
+      return ['guest'];
     };
 
-    this.$get = ['$rootScope', '$injector', '$timeout', function($rootScope, $injector, $timeout) {
+    /**
+     * @ngdoc method
+     * @name AuthService#hasIdentity
+     * 
+     * @return {boolean} True if there is a logged in user.
+     */
+    AuthService.hasIdentity = function() {
+      return AuthService.status == 'loggedIn';
+    };
 
-        /**
-         * @ngdoc service
-         * @name AuthService
-         * 
-         * @property {Object} options Object with all configuration options.
-         *
-         * @description
-         */
+    /**
+     * @ngdoc method
+     * @name AuthService#logout
+     */
+    AuthService.logout = function() {
+      authAdapter.logout();
+    };
 
-        var AuthService = {
-            options : Options,
-            status: 'loggedOut'
-        };
-        
-        function registerEventHandlers() {
-            $rootScope.$on('oauth:login', function() {
-                $rootScope.$broadcast('auth:loggedIn');
-                AuthService.status = 'loggedIn';
-            });
-            $rootScope.$on('oauth:logout', function() {
-                $rootScope.$broadcast('auth:loggedOut');
-                AuthService.status = 'loggedOut';
-            });
-            $rootScope.$on('oauth:expires-soon', function() {
-                $rootScope.$broadcast('auth:expires-soon');
-            });
-        };
-        
-        function getAuthAdapter() {
-            authAdapter = $injector.get(Options.authAdapter);
-        };
+    /**
+     * @description
+     * This function is used to indicate that authentication will not proceed which triggers a
+     * `auth:loginCancelled` event with the optional reason.
+     * 
+     * @param {string} reason an optional reason for cancelling the login.
+     */
+    AuthService.loginCancelled = function(reason) {
+      $rootScope.$broadcast('auth:loginCancelled', reason);
+    };
 
-        function getProfileProviders() {
-            if (!profileProviders) {
-                profileProviders = [];
-                if (authAdapter.getRoles) {
-                    profileProviders.push(authAdapter);
-                }
-                if ($injector.has(Options.profileProvider)) {
-                    var provider = $injector.get(Options.profileProvider);
-                    provider.getRoles && profileProviders.push(provider);
-                }
-            }
-            return profileProviders;
-        }
-
-        registerEventHandlers();
-        getAuthAdapter();
-        if (authAdapter.isLoggedIn()) {
-            $timeout(function() {
-                $rootScope.$broadcast('auth:loggedIn');
-            }, 1500);
-            AuthService.status = 'loggedIn';
-        }
-
-        /**
-         * @ngdoc method
-         * @name AuthService#getRoles
-         * 
-         * @returns {Array}
-         */
-        AuthService.getRoles = function() {
-            var providers = getProfileProviders(),
-                p, roles;
-            for (p in providers) {
-                roles = providers[p].getRoles();
-                if (roles !== false) {
-                    return roles;
-                }
-            }
-            return ['guest'];
-        };
-
-        /**
-         * @ngdoc method
-         * @name AuthService#logout
-         */
-        AuthService.logout = function() {
-            authAdapter.logout();
-        };
-
-        /**
-         * @description
-         * This function is used to indicate that authentication will not proceed which triggers a
-         * `auth:loginCancelled` event with the optional reason.
-         * 
-         * @param reason an optional reason for cancelling the login.
-         */
-        AuthService.loginCancelled = function(reason) {
-            $rootScope.$broadcast('auth:loginCancelled', reason);
-        };
-        
-        return AuthService;
-    }];
+    return AuthService;
+  }];
 });

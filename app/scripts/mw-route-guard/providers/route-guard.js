@@ -14,8 +14,6 @@ angular.module('mw.routeGuard')
  *
  * @description
  *
- * Used to find the host portion of a provided request URL which will resolve to the host of the current 
- * location when a relative path is specified.
  */
 .provider('RouteGuard', function RouteGuardProvider() {
     
