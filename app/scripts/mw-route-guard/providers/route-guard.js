@@ -17,7 +17,7 @@ angular.module('mw.routeGuard')
  */
 .provider('RouteGuard', function RouteGuardProvider() {
     
-    var allowAll = false,
+    var allowByDefault = false,
         Rules = {};
     
     /**
@@ -65,7 +65,7 @@ angular.module('mw.routeGuard')
      * @return {Object} self
      */
     this.allowAll = function() {
-        allowAll = true;
+        allowByDefault = true;
         return this;
     };
     /**
@@ -78,7 +78,7 @@ angular.module('mw.routeGuard')
      * @return {Object} self
      */
     this.denyAll = function() {
-        allowAll = false;
+        allowByDefault = false;
         return this;
     };
     
@@ -161,7 +161,7 @@ angular.module('mw.routeGuard')
         RouteGuard.isAllowedRoute = function(route) {
             var allowedRoles = Rules[route];
             if (!allowedRoles) {
-                return allowAll;
+                return allowByDefault;
             }
             
             var r, roles = AuthService.getRoles();

@@ -14,27 +14,31 @@ angular.module('mw.resourceGuard')
  * @description
  * Hides the element if access to the resource it contains is not authorized for the current user.
  */
-.directive('mwIfAllowedResource', ['ResourceGuard', '$animate', function(RouteGuard, $animate) {
-    return function(scope, element, attrs) {
+.directive('mwIfAllowedResource', ['ResourceGuard', '$animate', function(ResourceGuard, $animate) {
+    
+  var Directive = {
+    restrict: 'AE',
+    scope: {
+        type:   '@mwResource',
+        action: '@mwAction'
+    }
+  };
 
-        var href = attrs.href;
-        if (!href) {
-            var children = element.children();
-            href = children.length && children[0].href;
-        }
-        var path = href && href.substr(href.indexOf('#') + 1);
-        
-        function showIfAllowed() {
-            var allowed = !path || RouteGuard.isAllowedRoute(path);
-            $animate[allowed ? 'removeClass' : 'addClass'](element, 'ng-hide');
-        }
-        
-        scope.$on('auth:loggedOut', function() {
-            $animate.addClass(element, 'ng-hide');
-        });
-        
-        scope.$on('auth:loggedIn', showIfAllowed);
-        showIfAllowed();
-        
-    };
+  Directive.link = function(scope, element) {
+
+    function showIfAllowed() {
+      var allowed = ResourceGuard.isAllowedAction(scope.type, scope.action);
+      $animate[allowed ? 'removeClass' : 'addClass'](element, 'ng-hide');
+    }
+
+    scope.$on('auth:loggedOut', function() {
+      $animate.addClass(element, 'ng-hide');
+    });
+
+    scope.$on('auth:loggedIn', showIfAllowed);
+    showIfAllowed();
+
+  };
+
+  return Directive;
 }]);
