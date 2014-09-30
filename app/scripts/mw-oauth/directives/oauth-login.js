@@ -30,7 +30,7 @@ angular.module('mw.oauth')
                 OAuthEndpointLogin.login($scope.credentials)
                 .then(function(response) {
                     $scope.credentials = {};
-                    OAuth.setToken(response.host, response.tokenParams);
+                    OAuth.setToken(response.host, response.tokenParams, response.rememberMe);
                 }, function(reason) {
                     $scope.errorMsg = reason;
                     $scope.credentials.password = '';

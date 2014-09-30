@@ -8,6 +8,11 @@
         <label for="password">Password</label>
         <input ng-model="credentials.password" type="password" class="form-control" id="password">
     </div>
+    <div class="checkbox">
+        <label for="rememberMe">
+          <input ng-model="credentials.rememberMe" type="checkbox" class="form-control" id="rememberMe"> Remember me on this computer
+        </label>
+    </div>
     <div>
         <a ng-click="$dismiss()" class="btn btn-default">Cancel</a>
         <button class="btn btn-primary" type="submit">Log in</button>

@@ -82,9 +82,10 @@ angular.module('mw.oauth')
 
     this.$get = ['$rootScope',
                '$location',
+               '$localStorage',
                '$sessionStorage',
                '$timeout',
-      function($rootScope, $location, $sessionStorage, $timeout) {
+      function($rootScope, $location, $localStorage, $sessionStorage, $timeout) {
 
         /**
          * @ngdoc service
@@ -154,7 +155,7 @@ angular.module('mw.oauth')
             throw new TypeError("Setting the 'clientId' on the OAuthProvider is required.");
         }
 
-        var tokens;
+        var tokens = null;
 
         /**
          * @return {Object} self
@@ -165,10 +166,15 @@ angular.module('mw.oauth')
          * redirect which is added to the tokens object. 
          */
         function init() {
-            if (!$sessionStorage.oauth_tokens) {
-                $sessionStorage.oauth_tokens = tokens = {};
+            if ($localStorage.oauth_tokens) {
+              tokens = $sessionStorage.oauth_tokens = $localStorage.oauth_tokens;
+            } else if ($sessionStorage.oauth_tokens) {
+              tokens = $sessionStorage.oauth_tokens;
+            }
+            
+            if (!tokens) {
+              $sessionStorage.oauth_tokens = tokens = {};
             } else {
-                tokens = $sessionStorage.oauth_tokens;
                 // Trigger the login or expired event on all host tokens.
                 for (var host in tokens) {
                     OAuth.hasExpired(host) ? OAuth.destroyToken(host) : setProcessedToken(tokens[host]);
@@ -257,10 +263,13 @@ angular.module('mw.oauth')
          *   - scope: (optional) A space separated access control list.
          *   - token_type: (optional) The token type prepended to the access token in the header. (default: Bearer)
          * 
+         * @param {boolean} rememberMe Whether the user wants to be remembered on this computer (local vs. session store)
+         * 
          * @description
          * Sets a new access token for a host with parameters obtained from various methods.
          */
-        OAuth.setToken = function(host, tokenParams) {
+        OAuth.setToken = function(host, tokenParams, rememberMe) {
+            rememberForgetMe(rememberMe);
             setProcessedToken( processRawParams(host, tokenParams) );
         };
         
@@ -328,6 +337,14 @@ angular.module('mw.oauth')
     
 
         /////////////////////////////////////////////////////
+
+        function rememberForgetMe(rememberMe) {
+          if (rememberMe) {
+            $localStorage.oauth_tokens = tokens;
+          } else {
+            delete $localStorage.oauth_tokens;
+          }
+        }
 
         /**
          * @return {Object} The OAuth token paramters object if a token is available on the fragment URI or null.

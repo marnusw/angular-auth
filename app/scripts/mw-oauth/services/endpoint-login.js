@@ -43,7 +43,8 @@ angular.module('mw.oauth')
         request.then(function(successResponse) {
             result.resolve({
                 host        : OAuth.getRequestHost(options.authPath),
-                tokenParams : successResponse.data
+                tokenParams : successResponse.data,
+                rememberMe  : credentials.rememberMe
             });
         }, function(errorResponse) {
             result.reject((errorResponse.data && errorResponse.data.detail) || 'Invalid credentials');
