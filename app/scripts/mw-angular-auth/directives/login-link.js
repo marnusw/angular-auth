@@ -19,27 +19,27 @@ angular.module('mw.angular-auth.loginLink', ['mw.angular-auth'])
  */
 .directive('mwLoginLink', ['$rootScope', 'AuthService', function($rootScope, AuthService) {
 
-    var directive = {
-        restrict: 'AE',
-        replace: true,
-        scope: {
-            href           : '@',
-            loggedOutText  : '@', // Default: Log in
-            loggedInText   : '@'  // Default: Log out
-        },
-        template: '<a href="{{href}}" ng-click="click($event)">{{auth.status === "loggedIn" ? (loggedInText || "Log out") : (loggedOutText || "Log in")}}</a>',
-        link: function($scope) {
-            $scope.auth = AuthService;
-            
-            $scope.click = function(event) {
-                AuthService.logout();
-                if ($scope.href == '' || $scope.href == '/') {
-                    $rootScope.$broadcast('auth:loginRequired');
-                    event.preventDefault();
-                }
-            };
-        }
-    };
+  var directive = {
+    restrict: 'AE',
+    replace: true,
+    scope: {
+      href           : '@',
+      loggedOutText  : '@', // Default: Log in
+      loggedInText   : '@'  // Default: Log out
+    },
+    template: '<a href="{{href}}" ng-click="click($event)">{{auth.status === "loggedIn" ? (loggedInText || "Log out") : (loggedOutText || "Log in")}}</a>',
+    link: function($scope) {
+      $scope.auth = AuthService;
 
-    return directive;
+      $scope.click = function(event) {
+        AuthService.logout();
+        if ($scope.href == '' || $scope.href == '/') {
+          $rootScope.$broadcast('auth:loginRequired');
+          event.preventDefault();
+        }
+      };
+    }
+  };
+
+  return directive;
 }]);

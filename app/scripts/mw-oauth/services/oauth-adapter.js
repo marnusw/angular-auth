@@ -14,24 +14,25 @@ angular.module('mw.oauth')
  *
  * @description
  */
-.factory('OAuthAdapter', ['OAuth', 'OAuthEndpointLogin',
-  function(OAuth, OAuthEndpointLogin) {
+.factory('OAuthAdapter', ['OAuth', 'OAuthEndpointLogin', function(OAuth, OAuthEndpointLogin) {
 
-    var OAuthAdapter = {};
-    
-    OAuthAdapter.isLoggedIn = function() {
-        return OAuth.status == 'loggedIn';
-    };
-    
-    OAuthAdapter.getRoles = function() {
-        var roles = OAuth.getScope();
-        return roles && roles.length ? roles : false;
-    };
-    
-    OAuthAdapter.logout = function() {
-        var host = OAuthEndpointLogin.logout();
-        OAuth.destroyToken(host);
-    };
-    
-    return OAuthAdapter;
+  var OAuthAdapter = {};
+
+  OAuthAdapter.isLoggedIn = function() {
+    return OAuth.status == 'loggedIn';
+  };
+
+  OAuthAdapter.getRoles = function() {
+    var roles = OAuth.getScope();
+    return roles && roles.length ? roles : false;
+  };
+
+  OAuthAdapter.logout = function() {
+    var host = OAuthEndpointLogin.logout();
+    console.log('destroying token!');
+    OAuth.destroyToken(host);
+  };
+
+  return OAuthAdapter;
+
 }]);
