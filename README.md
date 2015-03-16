@@ -1,3 +1,5 @@
+*Under development, not ready for production use*
+
 # AngularJS directive for OAuth 2.0
 
 AngularJS directive for the [OAuth 2.0 Resource Owner Password Credentials Flow](http://tools.ietf.org/html/rfc6749#section-1.3.3).
