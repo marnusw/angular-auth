@@ -6,7 +6,6 @@
     "dist/views/templates/default"
   ],
   "ignore": [
-    "app",
     "test",
     "bower.json",
     "Gruntfile.js",
